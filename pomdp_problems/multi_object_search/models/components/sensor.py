@@ -84,7 +84,7 @@ class Laser2DSensor:
                                              self._fov_right[1],
                                              int(round((self._fov_right[1] - self._fov_right[0]) / self.angle_increment)))}
         # The size of the sensing region here is the area covered by the fan
-        self._sensing_region_size = self.fov / (2*math.pi) * math.pi * (max_range - min_range)**2
+        self._sensing_region_size = self.fov * (max_range**2 - min_range**2) / 2
 
     def in_field_of_view(th, view_angles):
         """Determines if the beame at angle `th` is in a field of view of size `view_angles`.
@@ -92,7 +92,7 @@ class Laser2DSensor:
         in front of the robot. By our angle convention, 180 degrees maps to [0,90] and [270, 360]."""
         fov_right = (0, view_angles / 2)
         fov_left = (2*math.pi - view_angles/2, 2*math.pi)
-        
+
     def within_range(self, robot_pose, point):
         """Returns true if the point is within range of the sensor; but the point might not
         actually be visible due to occlusion or "gap" between beams"""
@@ -101,7 +101,7 @@ class Laser2DSensor:
             return False
         if (not in_range(bearing, self._fov_left))\
            and (not in_range(bearing, self._fov_right)):
-            return False        
+            return False
         return True
 
     def shoot_beam(self, robot_pose, point):
@@ -144,7 +144,7 @@ class Laser2DSensor:
         Returns a MosObservation with this sensor model.
         """
         rx, ry, rth = robot_pose
-        
+
         # Check every object
         objposes = {}
         beam_map = {}
@@ -157,7 +157,7 @@ class Laser2DSensor:
                 if self.valid_beam(*beam):
                     d, bearing = beam  # distance, bearing
                     lx = rx + int(round(d * math.cos(rth + bearing)))
-                    ly = ry + int(round(d * math.sin(rth + bearing)))                            
+                    ly = ry + int(round(d * math.sin(rth + bearing)))
                     objposes[objid] = (lx, ly)
             else:
                 self._build_beam_map(beam, object_pose, beam_map=beam_map)
@@ -175,7 +175,7 @@ class Laser2DSensor:
     @property
     def sensing_region_size(self):
         raise NotImplementedError
-    
+
 
 class ProximitySensor(Laser2DSensor):
     """This is a simple sensor; Observes a region centered
